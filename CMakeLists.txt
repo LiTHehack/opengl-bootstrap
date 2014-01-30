@@ -77,6 +77,7 @@ add_subdirectory(
   ${PROJECT_EXT_DIR}/glfw/
 )
 
+
 set(ext_libs 
   ${CMAKE_SOURCE_DIR}/external/glfw/include/
   ${CMAKE_SOURCE_DIR}/external/glew/include/
@@ -102,7 +103,12 @@ ExternalProject_Add(glm
 include_directories(
         ${glm_PREFIX}/src/glm/
 )
-message(${GLFW_LIBRARIES})
+
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/common/
+)
+
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
         glfw

@@ -3,8 +3,7 @@
 #include <stdlib.h>
 
 // Include GLEW
-#ifdef __APPLE__
-#else
+#ifndef __APPLE__
 #include <GL/glew.h>
 #endif
 
@@ -15,10 +14,10 @@
 
 // Include GLM
 #include <glm/glm.hpp>
-using namespace glm;
-
 #include <iostream>
+#include "common/Shader.h"
 
+using namespace glm;
 void error_callback(int error, const char* description)
 {
     fputs(description, stderr);
@@ -35,26 +34,32 @@ int main( void )
         glfwSetErrorCallback(error_callback);
 
         
-        //	glfwWindowHint(GLFW_SAMPLES, 4);
+        glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Initialize GLEW if not on apple
-        #ifndef __APPLE__
-        
-        glewExperimental=GL_TRUE;
 
-        GLenum err = glewInit();
+        const GLchar *vertex_shader[] = {
+          "#version 400 core\n",
+          "in vec3 inputColor;\n",
+          "in vec4 ianputPosition;\n",
+          "out vec3 color;\n",
+          "void main(void) {\n",
+          "    color = inputColor;\n",
+          "    gl_Position = inputPosition;\n",
+          "}"
+        };
 
-	if (err != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-                fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-		return -1;
-	}
-        fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-        #endif
+        const GLchar *color_shader[] = {
+          "#version 400 core\n",
+          "in vec3 color;\n",
+          "out vec4 finalColor;\n",
+          "void main() {\n",
+          "    finalColor = vec4(color,1.0);\n",
+          "}"
+        };
         
         //Open a window
         GLFWwindow* window = glfwCreateWindow(640, 480, "This is a test", NULL, NULL);
@@ -69,17 +74,37 @@ int main( void )
         int rev = glfwGetWindowAttrib(window, GLFW_CONTEXT_REVISION);
 
         fprintf(stderr, "OpenGL version recieved: %d.%d.%d\n", major, minor, rev);
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE );
+        // Ensure we can capture the escape key being pressed below
+        glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE );
         glfwMakeContextCurrent(window);
+
+	// Initialize GLEW if not on apple
+        // Apple already has such context-info, and thus, this isn't needed.
+        #ifndef __APPLE__        
+        glewExperimental=GL_TRUE;
+        GLenum err = glewInit();
+        if (err != GLEW_OK) {
+          fprintf(stderr, "Failed to initialize GLEW\n");
+          fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+          return -1;
+        }
+        fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+        #endif
+
 	// Dark blue background
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
+        static ShaderProgram prog(vertex_shader, color_shader);
+        
 	do{
+          prog();
+
+          float ratio;
           int width, height;
           glfwGetFramebufferSize(window, &width, &height);
+          ratio = width / (float) height;
           glViewport(0, 0, width, height);
           glClear(GL_COLOR_BUFFER_BIT);
+
 
           glfwSwapBuffers(window);
           glfwPollEvents();
@@ -91,4 +116,3 @@ int main( void )
 	glfwTerminate();
         exit(EXIT_SUCCESS);
 }
-
