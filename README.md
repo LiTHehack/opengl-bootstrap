@@ -1,8 +1,8 @@
 #OpenGL Bootstrap
-In order to clone and compile and run this:
+In order to clone, compile and run this:
 
     git clone --recursive https://github.com/kallekrantz/opengl-bootstrap.git
-    cd opengl-bootstrap
+    cd opengl-bootstrap/build
     cmake ..
     make test
     ./test
