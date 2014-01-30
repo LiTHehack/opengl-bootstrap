@@ -44,7 +44,7 @@ int main( void )
         const GLchar *vertex_shader[] = {
           "#version 400 core\n",
           "in vec3 inputColor;\n",
-          "in vec4 ianputPosition;\n",
+          "in vec4 inputPosition;\n",
           "out vec3 color;\n",
           "void main(void) {\n",
           "    color = inputColor;\n",
