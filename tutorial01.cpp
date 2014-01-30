@@ -46,10 +46,7 @@ int main( void )
         
         glewExperimental=GL_TRUE;
 
-        std::cout << "wat1";
         GLenum err = glewInit();
-        std::cout << "wat2";
-        return 0;
 
 	if (err != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
