@@ -30,10 +30,7 @@ find_package(OpenGL REQUIRED)
 find_package(Git REQUIRED)
 
 
-include_directories(
-        ${PROJECT_EXT_DIR}/glew/include/
-        ${PROJECT_EXT_DIR}/glfw/include/
-)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -52,17 +49,14 @@ add_definitions(-D_UNIX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 SET(EXTRA_LIBS "-framework Cocoa -framework OpenGL -framework IOKit -framework Foundation -framework AppKit")
-#add_definitions(-D_MACOSX -ObjC++)
+
+# TODO This generates compile errors from glfw on Mavericks, need to investigate further
+# add_definitions(-D_MACOSX -ObjC++)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 set(GLEW_SOURCE
 	${PROJECT_EXT_DIR}/glew/src/glew.c
 )
-
-set(GLEW_HEADERS
-)
-
-
 add_library(GLEW STATIC
 	${GLEW_SOURCE}
 	${GLEW_INCLUDE}
@@ -73,6 +67,12 @@ target_link_libraries(GLEW
 	${EXTRA_LIBS}
 )
 
+#We do not want the extra compiling that GLFW does
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Do not build Tests")
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Do not build examples")
+
+#Get glfw
+# This requies that submodules were initialized properly
 add_subdirectory(
   ${PROJECT_EXT_DIR}/glfw/
 )
@@ -83,7 +83,9 @@ set(ext_libs
   ${CMAKE_SOURCE_DIR}/external/glew/include/
 )
 
-
+include_directories(
+        ${ext_libs}
+)
 
 #Set up some glm things
 set(glm_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external/glm")
@@ -105,6 +107,8 @@ include_directories(
 )
 
 
+#This is since common only rolls with header only libraries currently (Might change in the future)
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/common/
 )
@@ -117,6 +121,9 @@ set(ALL_LIBS
 )
 
 add_definitions(
+        -Wall
+        -Wextra
+        -Werror
 	-DTW_STATIC
 	-DTW_NO_LIB_PRAGMA
 	-DTW_NO_DIRECT3D
@@ -125,6 +132,7 @@ add_definitions(
 )
 
 
+#Below here is where your executable should be added
 add_executable(test
   ${CMAKE_SOURCE_DIR}/tutorial01.cpp
 )
