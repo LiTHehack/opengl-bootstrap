@@ -1,6 +1,12 @@
 #version 400 core
-in vec3 color;
-out vec4 finalColor;
-void main() {
-  finalColor = vec4(color,1.0);
+
+// Ouput data
+out vec3 color;
+
+void main()
+{
+
+	// Output color = red 
+	color = vec3(1,0,0);
+
 }

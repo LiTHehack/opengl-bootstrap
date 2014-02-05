@@ -27,6 +27,7 @@ class ShaderProgram {
 
 
   GLuint compile(GLuint type, GLchar const *source) {
+    
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);

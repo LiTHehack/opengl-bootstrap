@@ -19,8 +19,8 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
-#include "common/Init.h"
-#include "common/Shader.h"
+#include <common/Init.h>
+#include <common/Shader.h>
 
 using namespace glm;
 

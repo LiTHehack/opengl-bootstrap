@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-project(Procedural-water-refraction)
+set(PROJECT_NAME_STR Opengl-Bootstrap)
+project(${PROJECT_NAME_STR})
 
 #Set up the includes
 include(ExternalProject)
@@ -11,7 +12,6 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(PROJECT_CXX_DIR ${PROJECT_SOURCE_DIR}/src)
-
 set(PROJECT_EXT_DIR ${PROJECT_SOURCE_DIR}/external)
 
 
@@ -25,12 +25,31 @@ if( CMAKE_BINARY_DIR MATCHES " " )
   message( "Your Build Directory contains spaces. If you experience problems when compiling, this can be the cause." )
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+add_definitions(
+        -Wall
+        -Wextra
+        -pedantic
+        -Werror
+	-DTW_STATIC
+	-DTW_NO_LIB_PRAGMA
+	-DTW_NO_DIRECT3D
+	-DGLEW_STATIC
+	-D_CRT_SECURE_NO_WARNINGS
+)
+endif()
+
+if(MSVC)
+#vc 2012 fix for vararg templates
+    set(MSVC_COMPILER_DEFS "-D_VARIADIC_MAX=10")
+endif() 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 find_package(OpenGL REQUIRED)
 find_package(Git REQUIRED)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -67,48 +86,41 @@ target_link_libraries(GLEW
 	${EXTRA_LIBS}
 )
 
+
 #We do not want the extra compiling that GLFW does
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "Do not build Tests")
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Do not build examples")
 
-#Get glfw
+# Get glfw
 # This requies that submodules were initialized properly
 add_subdirectory(
   ${PROJECT_EXT_DIR}/glfw/
+)
+
+#Get glm
+add_subdirectory(
+  ${PROJECT_EXT_DIR}/glm
+)
+
+set(int_incl
+   
 )
 
 
 set(ext_libs 
   ${CMAKE_SOURCE_DIR}/external/glfw/include/
   ${CMAKE_SOURCE_DIR}/external/glew/include/
+  ${GLM_INCLUDE_DIR}
 )
 
 include_directories(
         ${ext_libs}
-)
-
-#Set up some glm things
-set(glm_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external/glm")
-set(glm_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${glm_INSTALL_DIR})
-
-ExternalProject_Add(glm
-  PREFIX ${glm_PREFIX}
-  GIT_REPOSITORY https://github.com/g-truc/glm.git
-  CMAKE_ARGS ${glm_CMAKE_ARGS}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_IN_SOURCE 1
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-
-include_directories(
-        ${glm_PREFIX}/src/glm/
+        ${PROJECT_INCLUDE_DIR}
 )
 
 
-#This is since common only rolls with header only libraries currently (Might change in the future)
-
+# This is since common only rolls with header only libraries currently (Might change in the future)
+# TODO: Put this in include/common instead
 include_directories(
   ${CMAKE_SOURCE_DIR}/common/
 )
@@ -120,22 +132,56 @@ set(ALL_LIBS
 	GLEW        
 )
 
-add_definitions(
-        -Wall
-        -Wextra
-        -Werror
-	-DTW_STATIC
-	-DTW_NO_LIB_PRAGMA
-	-DTW_NO_DIRECT3D
-	-DGLEW_STATIC
-	-D_CRT_SECURE_NO_WARNINGS
+#Below here is where your executable should be added instead of test
+add_executable(${PROJECT_NAME_STR}
+  ${PROJECT_CXX_DIR}/opengl-bootstrap.cpp
 )
 
+add_dependencies(${PROJECT_NAME_STR} glm)
 
-#Below here is where your executable should be added
-add_executable(test
-  ${CMAKE_SOURCE_DIR}/tutorial01.cpp
-)
-target_link_libraries(test
+target_link_libraries(${PROJECT_NAME_STR}
   ${ALL_LIBS}
 )
+
+
+
+
+#----------------------------
+# Testing
+#----------------------------
+# Get gtest
+add_subdirectory(
+  ${PROJECT_EXT_DIR}/gtest
+)
+add_definitions(${MSVC_COMPILER_DEFS})
+enable_testing()
+set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
+include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
+
+file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
+add_executable(${PROJECT_TEST_NAME} 
+               ${TEST_SRC_FILES}
+               )
+add_dependencies(${PROJECT_TEST_NAME} googletest)
+
+if(NOT WIN32)
+	target_link_libraries(${PROJECT_TEST_NAME} pthread)
+	target_link_libraries(${PROJECT_TEST_NAME}
+		${GTEST_LIBS_DIR}/libgtest.a
+		${GTEST_LIBS_DIR}/libgtest_main.a
+	)
+else()
+	target_link_libraries(${PROJECT_TEST_NAME}
+	       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
+	       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
+	)
+	target_link_libraries(${PROJECT_TEST_NAME}
+	       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
+	       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
+	)
+endif()
+
+add_test(test1 ${PROJECT_TEST_NAME})
+
+
+
