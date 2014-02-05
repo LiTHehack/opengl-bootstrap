@@ -8,7 +8,7 @@
 class ShaderProgram {
  private:
   GLuint vertex_shader, fragment_shader, prog;
-
+  std::string vfileName, ffileName;
   std::string getShaderType(GLuint type){
     std::string name;
     switch(type){
@@ -26,9 +26,9 @@ class ShaderProgram {
   }
 
 
-  GLuint compile(GLuint type, const GLchar *const (*source), GLsizei N) {
+  GLuint compile(GLuint type, GLchar const *source) {
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, N, source, NULL);
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
     GLint compiled;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
@@ -46,10 +46,12 @@ class ShaderProgram {
   }
 public:
   ShaderProgram(std::string vfileName, std::string ffileName) {
+    this->vfileName = vfileName;
+    this->ffileName = ffileName;
     auto v_source = readFromFile(vfileName);
     auto f_source = readFromFile(ffileName);
-    vertex_shader = compile(GL_VERTEX_SHADER, &v_source[0], v_source.size());
-    fragment_shader = compile(GL_FRAGMENT_SHADER, &f_source[0], f_source.size());
+    vertex_shader = compile(GL_VERTEX_SHADER, v_source.c_str());
+    fragment_shader = compile(GL_FRAGMENT_SHADER, f_source.c_str());
     prog = glCreateProgram();
     glAttachShader(prog, vertex_shader);
     glAttachShader(prog, fragment_shader);
@@ -63,21 +65,19 @@ public:
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
   }
-  static const std::vector<const GLchar*> readFromFile(std::string fileName){
+  static const std::string readFromFile(std::string fileName){
     std::ifstream ifs(fileName.c_str());
-    std::vector<const GLchar*> vec;
-    //This line is currently leaking memory, but it should not be of any concern, since the memory impact should be very low.
-    //Could potentially become a problem later on.
-    std::string *s = new std::string();
+    std::string out;
     if(ifs.is_open()){
-      while(std::getline(ifs, *s)){
-        vec.push_back((s->append("\n\0")).c_str());
+      std::string s;
+      while(std::getline(ifs, s)){
+        out += s + "\n";
       }
-      return vec;
     }
     else{
       std::cerr << "Could not open file" << std::endl;
-      return vec;
     }
+    ifs.close();
+    return out;
   }
 };
