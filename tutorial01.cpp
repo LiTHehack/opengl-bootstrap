@@ -5,11 +5,11 @@
 // Include GLEW
 #ifdef __APPLE_CC__
 #include <OpenGL/gl3.h>
+#define GLFW_INCLUDE_GLCOREARB
 #else 
 #include <GL/glew.h>
 #endif
 
-#define GLFW_INCLUDE_GLCOREARB
 #define GLFW_INCLUDE_GL3
 #define GLFW_NO_GLU
 // Include GLFW
@@ -42,6 +42,8 @@ int main( void )
   //Make opened window current context
   glfwMakeContextCurrent(window);
 
+  
+  init.glew();
 
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
