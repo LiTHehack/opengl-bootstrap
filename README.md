@@ -21,3 +21,7 @@ This project __requires__ cmake, git and svn
 
 To change the projects name (and the corresponding execuatables), change the ````set(PROJECT_NAME_STR Opengl-Bootstrap)```` line.
 
+
+
+Macs and Linux is currently supported (Mac users need to change the OpengGL version in the Opengl-Bootstrap file). 
+Windows support is currently very iffy. Pull Requests are welcome.
