@@ -27,15 +27,13 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 add_definitions(
-#        -Wall
-        #-Wextra
-        #-pedantic
-#        -Werror
-#	-DTW_STATIC
-#	-DTW_NO_LIB_PRAGMA
-#	-DTW_NO_DIRECT3D
-#	-DGLEW_STATIC
-#	-D_CRT_SECURE_NO_WARNINGS
+  -Wall
+  -Werror
+	-DTW_STATIC
+	-DTW_NO_LIB_PRAGMA
+	-DTW_NO_DIRECT3D
+	-DGLEW_STATIC
+	-D_CRT_SECURE_NO_WARNINGS
 )
 endif()
 
