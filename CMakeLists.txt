@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 set(PROJECT_NAME_STR Opengl-Bootstrap)
 project(${PROJECT_NAME_STR})
 
@@ -27,15 +27,15 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 add_definitions(
-        -Wall
-        -Wextra
-        -pedantic
-        -Werror
-	-DTW_STATIC
-	-DTW_NO_LIB_PRAGMA
-	-DTW_NO_DIRECT3D
-	-DGLEW_STATIC
-	-D_CRT_SECURE_NO_WARNINGS
+#        -Wall
+        #-Wextra
+        #-pedantic
+#        -Werror
+#	-DTW_STATIC
+#	-DTW_NO_LIB_PRAGMA
+#	-DTW_NO_DIRECT3D
+#	-DGLEW_STATIC
+#	-D_CRT_SECURE_NO_WARNINGS
 )
 endif()
 
@@ -48,7 +48,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 find_package(OpenGL REQUIRED)
 find_package(Git REQUIRED)
-
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -102,11 +101,6 @@ add_subdirectory(
   ${PROJECT_EXT_DIR}/glm
 )
 
-set(int_incl
-   
-)
-
-
 set(ext_libs 
   ${CMAKE_SOURCE_DIR}/external/glfw/include/
   ${CMAKE_SOURCE_DIR}/external/glew/include/
@@ -127,8 +121,8 @@ include_directories(
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
-        glfw
-        ${GLFW_LIBRARIES}
+  glfw
+  ${GLFW_LIBRARIES}
 	GLEW        
 )
 
@@ -137,7 +131,14 @@ add_executable(${PROJECT_NAME_STR}
   ${PROJECT_CXX_DIR}/opengl-bootstrap.cpp
 )
 
-add_dependencies(${PROJECT_NAME_STR} glm)
+set(EXT_DEPS
+    glm
+    glfw
+    googletest
+    pthread
+)
+
+add_dependencies(${PROJECT_NAME_STR} ${EXT_DEPS})
 
 target_link_libraries(${PROJECT_NAME_STR}
   ${ALL_LIBS}
@@ -162,26 +163,26 @@ file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
 add_executable(${PROJECT_TEST_NAME} 
                ${TEST_SRC_FILES}
                )
-add_dependencies(${PROJECT_TEST_NAME} googletest)
-
-if(NOT WIN32)
-	target_link_libraries(${PROJECT_TEST_NAME} pthread)
-	target_link_libraries(${PROJECT_TEST_NAME}
-		${GTEST_LIBS_DIR}/libgtest.a
-		${GTEST_LIBS_DIR}/libgtest_main.a
-	)
+# Create dependency of MainTest on googletest
+add_dependencies(${PROJECT_TEST_NAME} ${EXT_DEPS})
+if(MSVC)
+  set(Suffix ".lib")
 else()
-	target_link_libraries(${PROJECT_TEST_NAME}
-	       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-	       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-	)
-	target_link_libraries(${PROJECT_TEST_NAME}
-	       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-	       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-	)
+  set(Suffix ".a")
+  set(Pthread "-pthread")
 endif()
+target_link_libraries(${PROJECT_TEST_NAME}
+       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${Suffix}
+       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${Suffix}
+)
 
-add_test(test1 ${PROJECT_TEST_NAME})
+target_link_libraries(${PROJECT_TEST_NAME}
+       debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${Suffix}
+       optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${Suffix}
+       ${Pthread}
+)
+
+add_test(test ${PROJECT_TEST_NAME})
 
 
 
