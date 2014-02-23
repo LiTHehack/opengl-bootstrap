@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.8)
 set(PROJECT_NAME_STR Opengl-Bootstrap)
-project(${PROJECT_NAME_STR})
+project(${PROJECT_NAME_STR} C CXX)
 
 #Set up the includes
 include(ExternalProject)
