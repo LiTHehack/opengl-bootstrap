@@ -67,8 +67,10 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 SET(EXTRA_LIBS "-framework Cocoa -framework OpenGL -framework IOKit -framework Foundation -framework AppKit")
 
-# TODO This generates compile errors from glfw on Mavericks, need to investigate further
-# add_definitions(-D_MACOSX -ObjC++)
+if(CMAKE_GENERATOR STREQUAL Xcode)
+        add_definitions(-D_MACOSX -ObjC++)
+endif()
+
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 set(GLEW_SOURCE
